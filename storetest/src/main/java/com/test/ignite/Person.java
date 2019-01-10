@@ -1,17 +1,12 @@
 package com.test.ignite;
 
-import org.apache.ignite.cache.query.annotations.QuerySqlField;
-
 import java.io.Serializable;
 import java.util.Objects;
 
 @SuppressWarnings("all")
 public class Person implements Serializable {
-    @QuerySqlField(index = true)
     private String id;
-    @QuerySqlField(index = true)
     private String firstName;
-    @QuerySqlField(index = true)
     private String lastName;
 
     public Person() {

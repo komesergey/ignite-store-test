@@ -37,8 +37,8 @@ public class IgniteTest {
         cfg.setWriteThrough(true);
         cfg.setWriteBehindEnabled(true);
         cfg.setWriteBehindFlushSize(10_000_000);
+        // Flush whole queue once in 10 minutes
         cfg.setWriteBehindFlushFrequency(10 * 60 * 1000);
-        cfg.setIndexedTypes(String.class, Person.class);
 
         igniteConfiguration.setCacheConfiguration(cfg);
         Ignite ignite = Ignition.start(igniteConfiguration);
@@ -52,11 +52,12 @@ public class IgniteTest {
             }
             long start = System.currentTimeMillis();
             System.out.println("Started");
-            for(int i = 0; i < 1_000; i++){
+            for(int i = 0; i < 1_000_000; i++){
                 Person person = new Person(UUID.randomUUID().toString(), "TEST " + UUID.randomUUID().toString(), "TESTOV " + UUID.randomUUID().toString());
                 createdCache.put(person.getId(), person);
             }
-            // Finished in 167995 ms for 1 million records with write-behind and settings above
+            // Finished in 167995 ms for 1 million records with write-behind and settings above - with H2 indexing turned on!
+            // Finished in 132101 ms - without indexing
             // ~ 0,17 ms on one record (could be much less with proper Ignite cache configuration),
             // main goal was to decouple insert time from SQL db
             // Then after 10 minutes Ignite started flushing data into Oracle asynchronously
