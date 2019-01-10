@@ -7,6 +7,7 @@ import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.cache.CacheMode;
 import org.apache.ignite.cache.CacheWriteSynchronizationMode;
 import org.apache.ignite.configuration.CacheConfiguration;
+import org.apache.ignite.configuration.DataStorageConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.multicast.TcpDiscoveryMulticastIpFinder;
@@ -15,12 +16,28 @@ import javax.cache.configuration.FactoryBuilder;
 import java.util.Collections;
 import java.util.UUID;
 
+/**
+ -Xms4g
+ -Xmx10g
+ -XX:+UseG1GC
+ -server
+ -XX:MaxMetaspaceSize=256m
+ -DIGNITE_QUIET=false
+ */
 public class IgniteTest {
 
     public static void main(String... args){
         IgniteConfiguration igniteConfiguration = new IgniteConfiguration();
-        igniteConfiguration.setPeerClassLoadingEnabled(true);
-        igniteConfiguration.setClientMode(true);
+        igniteConfiguration.setPeerClassLoadingEnabled(false);
+
+        // Uncomment to use as Ignite client
+        // igniteConfiguration.setClientMode(true);
+
+        DataStorageConfiguration storageConfiguration = new DataStorageConfiguration();
+        // Max 8Gb of system memory
+        storageConfiguration.getDefaultDataRegionConfiguration().setMaxSize(8L * 1024 * 1024 * 1024);
+
+        igniteConfiguration.setDataStorageConfiguration(storageConfiguration);
         TcpDiscoverySpi tcpDiscoverySpi = new TcpDiscoverySpi();
         TcpDiscoveryMulticastIpFinder tcpDiscoveryMulticastIpFinder = new TcpDiscoveryMulticastIpFinder();
         tcpDiscoveryMulticastIpFinder.setAddresses(Collections.singleton("127.0.0.1:47500..47509"));
@@ -64,6 +81,16 @@ public class IgniteTest {
 
             // Finished in 504936 ms for 1 million records in pure inserts into Oracle (but with C3PO pool)
             // ~ 0,5 ms on one record
+
+            // ONLY SERVER NODE - Finished in 9294 ms
+            /**
+             * If you want to use it as Ignite client,
+             * package person-store and to libs folder following jars:
+                 person-store-1.0-SNAPSHOT.jar
+                 mchange-commons-java-0.2.11.jar
+                 c3p0-0.9.5.2.jar
+                 ojdbc6.jar
+             */
             System.out.println("Finished in "+ (System.currentTimeMillis() - start) + " ms");
         }
     }
