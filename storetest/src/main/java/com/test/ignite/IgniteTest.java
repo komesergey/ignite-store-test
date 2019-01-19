@@ -7,6 +7,7 @@ import org.apache.ignite.cache.CacheAtomicityMode;
 import org.apache.ignite.cache.CacheMode;
 import org.apache.ignite.cache.CacheWriteSynchronizationMode;
 import org.apache.ignite.configuration.CacheConfiguration;
+import org.apache.ignite.configuration.DataPageEvictionMode;
 import org.apache.ignite.configuration.DataStorageConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
@@ -36,6 +37,12 @@ public class IgniteTest {
         DataStorageConfiguration storageConfiguration = new DataStorageConfiguration();
         // Max 8Gb of system memory
         storageConfiguration.getDefaultDataRegionConfiguration().setMaxSize(8L * 1024 * 1024 * 1024);
+        // Disabled by default (must be disabled for maximum performance)
+        storageConfiguration.getDefaultDataRegionConfiguration().setMetricsEnabled(false);
+        // Disabled by default (must be disabled for maximum performance)
+        storageConfiguration.getDefaultDataRegionConfiguration().setPersistenceEnabled(false);
+        // Eviction will start by default only when 90% data region is occupied.
+        storageConfiguration.getDefaultDataRegionConfiguration().setPageEvictionMode(DataPageEvictionMode.RANDOM_LRU);
 
         igniteConfiguration.setDataStorageConfiguration(storageConfiguration);
         TcpDiscoverySpi tcpDiscoverySpi = new TcpDiscoverySpi();
@@ -52,6 +59,7 @@ public class IgniteTest {
         cfg.setCacheStoreFactory(FactoryBuilder.factoryOf(CacheJdbcPersonStore.class));
         cfg.setReadThrough(true);
         cfg.setWriteThrough(true);
+        cfg.setOnheapCacheEnabled(false);
         cfg.setWriteBehindEnabled(true);
         cfg.setWriteBehindFlushSize(10_000_000);
         // Flush whole queue once in 10 minutes
